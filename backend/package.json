@@ -5,19 +5,31 @@
     "dev": "PORT=5001 bun run src/main.ts --watch",
     "start": "bun run src/main.ts",
     "build": "tsc && cp -r src/data dist",
-    "prettier": "prettier . --write"
+    "prettier": "prettier . --write",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:dev": "drizzle-kit dev"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.1.16",
+    "@prisma/client": "^6.4.1",
     "@types/ejs": "^3.1.5",
     "ai": "^4.1.45",
+    "better-auth": "^1.2.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.40.0",
     "ejs": "^3.1.10",
     "hono": "^4.2.4",
+    "pg": "^8.13.3",
+    "postgres": "^3.4.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/bun": "^1.0.12"
+    "@types/bun": "^1.0.12",
+    "@types/pg": "^8.11.11",
+    "drizzle-kit": "^0.30.5",
+    "tsx": "^4.19.3"
   }
 }

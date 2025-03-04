@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import * as conf from '@/conf';
+import { authClient } from '@/lib/auth-client';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -27,6 +27,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 interface LoginProps {
   onLogin: () => void;
 }
+
+const { signIn } = authClient;
 
 export default function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -52,43 +54,73 @@ export default function Login({ onLogin }: LoginProps) {
   }, [onLogin]);
 
   const handleLogin = async ({ email, password }: LoginFormValues) => {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(conf.API_URL + '/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    signIn.email({
+      email,
+      password,
+      fetchOptions: {
+        onResponse: () => {
+          setIsLoading(false);
         },
-        body: JSON.stringify({ email, password }),
-      });
+        onRequest: () => {
+          setIsLoading(true);
+        },
+        onError: (ctx) => {
+          toast({
+            title: 'Error!',
+            description: ctx.error.message,
+            variant: 'destructive',
+          });
+        },
+        onSuccess: async (data) => {
+          console.log('Logged in', data);
+          localStorage.setItem('authToken', data.data.token);
+          localStorage.setItem('userEmail', email);
+          toast({
+            title: 'Login successful',
+            description: 'Welcome back to JobHunter!',
+          });
+          onLogin();
+        },
+      },
+    });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userEmail', email);
-        toast({
-          title: 'Login successful',
-          description: 'Welcome back to JobHunter!',
-        });
-        onLogin();
-      } else {
-        toast({
-          title: 'Login failed',
-          description: data.message || 'Login failed',
-        });
-      }
-    } catch (e) {
-      toast({
-        title: 'Error!',
-        description: 'An error occurred. Please try again.',
-        variant: 'destructive',
-      });
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
+    // setIsLoading(true);
+    //
+    // try {
+    //   const response = await fetch(import.meta.env.VITE_API_URL + '/api/login', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ email, password }),
+    //   });
+    //
+    //   const data = await response.json();
+    //
+    //   if (response.ok) {
+    //     localStorage.setItem('authToken', data.token);
+    //     localStorage.setItem('userEmail', email);
+    //     toast({
+    //       title: 'Login successful',
+    //       description: 'Welcome back to JobHunter!',
+    //     });
+    //     onLogin();
+    //   } else {
+    //     toast({
+    //       title: 'Login failed',
+    //       description: data.message || 'Login failed',
+    //     });
+    //   }
+    // } catch (e) {
+    //   toast({
+    //     title: 'Error!',
+    //     description: 'An error occurred. Please try again.',
+    //     variant: 'destructive',
+    //   });
+    //   console.error(e);
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   return (

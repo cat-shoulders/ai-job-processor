@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { authClient } from '@/lib/auth-client';
 
 interface LayoutProps {
   onLogout: () => void;
@@ -9,7 +10,6 @@ interface LayoutProps {
 
 export default function Layout({ onLogout }: LayoutProps) {
   const location = useLocation();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
@@ -21,13 +21,6 @@ export default function Layout({ onLogout }: LayoutProps) {
       setSidebarOpen(false);
     }
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (!localStorage.getItem('authToken') && location.pathname !== '/login') {
-      console.log('Not logged in', location.pathname);
-      navigate('login');
-    }
-  }, [navigate]);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">

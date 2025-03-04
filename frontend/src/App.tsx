@@ -1,25 +1,29 @@
-import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import Login from '@/pages/Login';
+import Register from '@/pages/Register';
 import Dashboard from '@/pages/Dashboard';
 import JobApplications from '@/pages/JobApplications';
 import Profile from '@/pages/Profile';
 import Layout from '@/components/Layout';
 import AddApplication from '@/pages/AddApplication';
+import { authClient } from '@/lib/auth-client.ts';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('authToken') !== null,
-  );
+  const { data: userData, error, isPending } = authClient.useSession();
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  const handleLogin = () => {};
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
     localStorage.removeItem('authToken');
   };
 
@@ -30,7 +34,7 @@ function App() {
           <Route
             path="/login"
             element={
-              isAuthenticated ? (
+              userData ? (
                 <Navigate to="/dashboard" replace />
               ) : (
                 <Login onLogin={handleLogin} />
@@ -38,9 +42,19 @@ function App() {
             }
           />
           <Route
+            path="/register"
+            element={
+              userData ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <Register onRegister={handleLogin} />
+              )
+            }
+          />
+          <Route
             path="/"
             element={
-              isAuthenticated ? (
+              userData ? (
                 <Layout onLogout={handleLogout} />
               ) : (
                 <Navigate to="/login" replace />

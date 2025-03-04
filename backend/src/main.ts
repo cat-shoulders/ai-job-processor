@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/bun';
 import { cors } from 'hono/cors';
-import { analyze } from './analyze';
-import { login } from './login';
 import fs from 'node:fs';
 import path from 'node:path';
+import { analyze } from './analyze';
+import { auth } from './lib/auth';
 
 const app = new Hono();
 
@@ -33,15 +33,23 @@ app.use('*', async (c, next) => {
 if (process.env.ENV !== 'production') {
   console.log('CORS enabled for development');
   app.use(
-    '/api/*',
+    '*',
     cors({
-      origin: ['http://localhost:5173'],
+      origin: 'http://localhost:5173', // replace with your origin
+      allowHeaders: ['Content-Type', 'Authorization'],
+      allowMethods: ['POST', 'GET', 'OPTIONS'],
+      exposeHeaders: ['Content-Length'],
+      maxAge: 600,
+      credentials: true,
     }),
   );
 }
 
 // API routes
-app.all('/api/login', login);
+app.all('/api/auth/*', (c) => {
+  return auth.handler(c.req.raw);
+});
+
 app.all('/api/analyze', analyze);
 
 // Check if static folder exists
